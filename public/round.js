@@ -1,11 +1,11 @@
 console.log("round.js in");
 const addRoundBtn = document.querySelector(".add-round-btn");
 const gridContainer = document.querySelector(".grid-container");
-const sumScore = document.querySelector("#totalScore");
-const player1_SumScore = document.querySelector("#player-1-sum-score");
-const player2_SumScore = document.querySelector("#player-2-sum-score");
-const player3_SumScore = document.querySelector("#player-3-sum-score");
-const player4_SumScore = document.querySelector("#player-4-sum-score");
+let sumScore = document.querySelector("#totalScore");
+let player1_SumScore = document.querySelector("#player-1-sum-score");
+let player2_SumScore = document.querySelector("#player-2-sum-score");
+let player3_SumScore = document.querySelector("#player-3-sum-score");
+let player4_SumScore = document.querySelector("#player-4-sum-score");
 
 //GET user data
 fetch("http://localhost:3000/users")
@@ -63,28 +63,28 @@ fetch("http://localhost:3000/users")
           roundHtml += `
             <div class="grid-item">Round ${index + 1}</div>
             <input
-            onchange="handleOnchange(${index}, this.value, 0)"
+            onchange="handleOnchange(${index}, this.value, 0,this.id)"
             id="round-${round.id}-player-100"
             class="grid-item boder-1px"
             type="number"
             value=${round.score[0]}
             />
             <input
-            onchange="handleOnchange(${index}, this.value, 1)"
+            onchange="handleOnchange(${index}, this.value, 1,this.id)"
             id="round-${round.id}-player-101"
             class="grid-item boder-1px"
             type="number"
             value=${round.score[1]}
             />
             <input
-            onchange="handleOnchange(${index}, this.value, 2)"
+            onchange="handleOnchange(${index}, this.value, 2,this.id)"
             id="round-${round.id}-player-102"
             class="grid-item boder-1px"
             type="number"
             value=${round.score[2]}
             />
             <input
-            onchange="handleOnchange(${index}, this.value, 3)"
+            onchange="handleOnchange(${index}, this.value, 3,this.id)"
             id="round-${round.id}-player-103"
             class="grid-item boder-1px"
             type="number"
@@ -100,7 +100,6 @@ fetch("http://localhost:3000/users")
 
 addRoundBtn.onclick = async () => {
   try {
-    console.log("Add round btn");
     let res = await fetch(`http://localhost:3000/rounds`, {
       method: "POST",
       headers: {
@@ -112,9 +111,47 @@ addRoundBtn.onclick = async () => {
     })
       .then((res) => res.json())
       .then((rounds) => {
-        console.log("rounds: ", JSON.parse(rounds));
-        // ...here
-        location.reload();
+        let newRoundHtml = `
+            <div class="grid-item">Round ${rounds.length}</div>
+            <input
+            onchange="handleOnchange(${
+              rounds.length - 1
+            }, this.value, 0, this.id)"
+            id="round-${rounds[rounds.length - 1].id}-player-100"
+            class="grid-item boder-1px"
+            type="number"
+            value="0"
+            />
+            <input
+            onchange="handleOnchange(${
+              rounds.length - 1
+            }, this.value, 1, this.id)"
+            id="round-${rounds[rounds.length - 1].id}-player-101"
+            class="grid-item boder-1px"
+            type="number"
+            value="0"
+            />
+            <input
+            onchange="handleOnchange(${
+              rounds.length - 1
+            }, this.value, 2, this.id)"
+            id="round-${rounds[rounds.length - 1].id}-player-102"
+            class="grid-item boder-1px"
+            type="number"
+            value="0"
+            />
+            <input
+            onchange="handleOnchange(${
+              rounds.length - 1
+            }, this.value, 3, this.id)"
+            id="round-${rounds[rounds.length - 1].id}-player-103"
+            class="grid-item boder-1px"
+            type="number"
+            value="0"
+            />
+        `;
+        // console.log("gridContainer:", gridContainer.innerHTML);
+        gridContainer.innerHTML += newRoundHtml;
       })
       .catch((error) => alert(error));
   } catch (error) {
@@ -123,13 +160,9 @@ addRoundBtn.onclick = async () => {
 };
 
 // Input onchange handle
-const handleOnchange = async (roundIndex, value, userScoreIndex) => {
-  console.log(sumScore.innerHTML);
-  //   const idSplit = inputId.split("-");
+const handleOnchange = async (roundIndex, value, userScoreIndex, inputId) => {
   const queryParams = `?roundIndex=${roundIndex}&userScoreIndex=${userScoreIndex}&value=${value}`;
-  //   console.log("queryParmas: ", queryParams);
   try {
-    console.log("Update score");
     let res = await fetch(`http://localhost:3000/rounds${queryParams}`, {
       method: "PUT",
       headers: {
@@ -141,9 +174,9 @@ const handleOnchange = async (roundIndex, value, userScoreIndex) => {
     })
       .then((res) => res.json())
       .then((rounds) => {
-        console.log("rounds hehe: ", rounds);
-        // updateSumHTML(userScoreIndex, rounds);
-        location.reload();
+        let inputHtml = document.querySelector(`#${inputId}`);
+        inputHtml.setAttribute("value", value);
+        updateSumHTML(userScoreIndex, rounds);
       })
       .catch((error) => alert(error));
   } catch (error) {
@@ -153,16 +186,20 @@ const handleOnchange = async (roundIndex, value, userScoreIndex) => {
 
 //Update part of HTML
 const updateSumHTML = (userScoreIndex, rounds) => {
-  console.log("updateSumHTML");
-
-  //   sumScore.innerHTML = "abc";
+  // define HTML element
+  let sumScore = document.querySelector("#totalScore");
+  let player1_SumScore = document.querySelector("#player-1-sum-score");
+  let player2_SumScore = document.querySelector("#player-2-sum-score");
+  let player3_SumScore = document.querySelector("#player-3-sum-score");
+  let player4_SumScore = document.querySelector("#player-4-sum-score");
+  //Total score
   let sumAll = 0;
   let sumRoundArr = rounds.map((round) => {
     return round.score.reduce((acc, cur) => acc + cur, 0);
   });
 
   sumAll = sumRoundArr.reduce((acc, cur) => acc + cur, 0);
-  //
+  //Sum score of each player
   let playerSum = [];
   for (let i = 0; i < 4; i++) {
     let sum = rounds.reduce((acc, cur) => {
@@ -170,8 +207,22 @@ const updateSumHTML = (userScoreIndex, rounds) => {
     }, 0);
     playerSum.push(sum);
   }
-
-  //   `player${
-  //     userScoreIndex + 1
-  //   }_SumScore`.innerHTML = `${playerSum[userScoreIndex]}`;
+  // Update sum HTML element
+  sumScore.innerHTML = `Sum of scores ${sumAll}`;
+  switch (userScoreIndex) {
+    case 0:
+      player1_SumScore.innerHTML = playerSum[0];
+      break;
+    case 1:
+      player2_SumScore.innerHTML = playerSum[1];
+      break;
+    case 2:
+      player3_SumScore.innerHTML = playerSum[2];
+      break;
+    case 3:
+      player4_SumScore.innerHTML = playerSum[3];
+      break;
+    default:
+      break;
+  }
 };

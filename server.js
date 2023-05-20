@@ -15,11 +15,12 @@ const roundsPath = `${__dirname}/dev-data/rounds.json`;
 
 // HOME PAGE
 server.get("/", (req, res) => {
-  res.send("Home page");
+  // res.send("Home page");
+  res.sendFile(`${__dirname}/public/adduser.html`);
 });
 // Add user page
 server.get("/add-user", (req, res) => {
-  res.sendFile(`${__dirname}/public/adduser.html`);
+  // res.sendFile(`${__dirname}/public/adduser.html`);
 });
 server.post("/add-user", (req, res) => {
   try {
@@ -77,7 +78,7 @@ server.post("/rounds", (req, res) => {
       });
       console.log("after push:", rounds);
       fs.writeFileSync(roundsPath, JSON.stringify(rounds));
-      res.json(JSON.stringify(rounds));
+      res.json(rounds);
     } else {
       rounds.push({
         id: rounds[rounds.length - 1].id + 1,
@@ -85,7 +86,7 @@ server.post("/rounds", (req, res) => {
       });
       console.log("after push:", rounds);
       fs.writeFileSync(roundsPath, JSON.stringify(rounds));
-      res.json(JSON.stringify(rounds));
+      res.json(rounds);
     }
   } catch (error) {
     res.json({
@@ -102,9 +103,22 @@ server.put("/rounds", (req, res) => {
 
     rounds[parseInt(roundIndex)].score[parseInt(userScoreIndex)] =
       parseInt(value);
-    console.log("rounds[parseInt(roundIndex)]: ", rounds[parseInt(roundIndex)]);
+    // console.log("rounds[parseInt(roundIndex)]: ", rounds[parseInt(roundIndex)]);
     fs.writeFileSync(roundsPath, JSON.stringify(rounds));
     res.json(rounds);
+  } catch (error) {
+    res.json({
+      message: error,
+    });
+  }
+});
+server.delete("/rounds", (req, res) => {
+  try {
+    const rounds = [];
+    fs.writeFileSync(roundsPath, JSON.stringify(rounds));
+    res.json({
+      message: "delete rounds succeed",
+    });
   } catch (error) {
     res.json({
       message: error,

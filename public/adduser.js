@@ -27,6 +27,22 @@ creatBtn.onclick = async () => {
           namePlayer4: namePlayer4.value,
         }),
       });
+      //Delete old rounds
+      fetch(`http://localhost:3000/rounds`, {
+        method: "DELETE",
+      })
+        .then((response) => {
+          if (response.ok) {
+            console.log("Resource deleted successfully.");
+          } else {
+            console.log("Failed to delete resource.");
+          }
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+        });
+      //Redirect to round page
+      window.location.href = "http://localhost:3000/round/id";
       let data = await res.json();
     } else {
       warning.innerHTML = "Please fill all the blank";
